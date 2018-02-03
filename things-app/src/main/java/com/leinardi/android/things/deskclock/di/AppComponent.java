@@ -17,10 +17,8 @@
 package com.leinardi.android.things.deskclock.di;
 
 import android.app.Application;
-import android.support.annotation.Nullable;
 
 import com.leinardi.android.things.deskclock.ThingsApp;
-import com.leinardi.android.things.driver.epaperdriverhat.Gdew075t8Epd;
 import dagger.BindsInstance;
 import dagger.Component;
 import dagger.android.AndroidInjectionModule;
@@ -44,9 +42,6 @@ public interface AppComponent {
     interface Builder {
         @BindsInstance
         Builder application(Application application);
-
-        @BindsInstance
-        Builder epd(@Nullable Gdew075t8Epd gdew075t8Epd);
 
         AppComponent build();
     }

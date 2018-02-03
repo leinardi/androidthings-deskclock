@@ -19,11 +19,18 @@ package com.leinardi.android.things.deskclock.sensor;
 import javax.inject.Inject;
 
 public class SensorRepository {
+    private TphSensorDriverController mTphSensorDriverController;
+
     @Inject
-    public SensorRepository() {
+    public SensorRepository(TphSensorDriverController tphSensorDriverController) {
+        mTphSensorDriverController = tphSensorDriverController;
     }
 
     public SensorData getSensorData() {
-        return new SensorData(24, 1012, 30, 540.499099f);
+        return new SensorData(
+                Math.round(mTphSensorDriverController.getTemperature()),
+                Math.round(mTphSensorDriverController.getPressure()),
+                Math.round(mTphSensorDriverController.getHumidity()),
+                540.499099f);
     }
 }

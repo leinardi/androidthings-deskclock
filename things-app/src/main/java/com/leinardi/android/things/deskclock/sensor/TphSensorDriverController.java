@@ -18,6 +18,11 @@ package com.leinardi.android.things.deskclock.sensor;
 
 import com.leinardi.android.things.deskclock.controller.BaseDriverController;
 
-public abstract class SensorDriverController<D extends AutoCloseable> extends BaseDriverController<D> {
+public abstract class TphSensorDriverController<D extends AutoCloseable>
+        extends BaseDriverController<D> {
     public abstract Float getTemperature();
+
+    public abstract Float getPressure();
+
+    public abstract Float getHumidity();
 }

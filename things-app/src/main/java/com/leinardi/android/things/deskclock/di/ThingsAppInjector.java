@@ -17,10 +17,6 @@
 package com.leinardi.android.things.deskclock.di;
 
 import com.leinardi.android.things.deskclock.ThingsApp;
-import com.leinardi.android.things.driver.epaperdriverhat.Gdew075t8Epd;
-import timber.log.Timber;
-
-import java.io.IOException;
 
 public class ThingsAppInjector extends AppInjector<ThingsApp> {
     private static final ThingsAppInjector INSTANCE = new ThingsAppInjector();
@@ -35,16 +31,8 @@ public class ThingsAppInjector extends AppInjector<ThingsApp> {
 
     @Override
     protected void injectApplication(ThingsApp application) {
-        Gdew075t8Epd epd = null;
-        try {
-            epd = new Gdew075t8Epd();
-        } catch (IOException e) {
-            Timber.e(e);
-        }
-
         DaggerAppComponent.builder()
                 .application(application)
-                .epd(epd)
                 .build()
                 .inject(application);
     }

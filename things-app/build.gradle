@@ -75,6 +75,7 @@ dependencies {
     implementation deps.lifecycle.extensions
     implementation deps.timber
     implementation deps.driver_epaperdriverhat
+    implementation deps.driver_bmx280
 
     implementation deps.dagger.runtime
     implementation deps.dagger.android
