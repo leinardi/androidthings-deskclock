@@ -18,16 +18,25 @@ package com.leinardi.android.things.deskclock.sensor;
 
 import android.support.annotation.Nullable;
 
-import com.leinardi.android.things.deskclock.controller.BaseDriverController;
+import com.leinardi.android.things.driver.tsl256x.Tsl256x;
+import timber.log.Timber;
 
-public abstract class TphSensorDriverController<D extends AutoCloseable>
-        extends BaseDriverController<D> {
-    @Nullable
-    public abstract Float getTemperature();
+import java.io.IOException;
 
+public class Tsl256xLightSensorDriverController extends LightSensorDriverController<Tsl256x> {
     @Nullable
-    public abstract Float getPressure();
-
-    @Nullable
-    public abstract Float getHumidity();
+    @Override
+    public Float getLux() {
+        Float lux = null;
+        try {
+            Tsl256x tsl256x = getDriver();
+            tsl256x.setAutoGain(true);
+            tsl256x.setIntegrationTime(Tsl256x.IntegrationTime.INTEGRATION_TIME_402MS);
+            lux = tsl256x.readLux();
+            Timber.d("L = %f", lux);
+        } catch (IOException e) {
+            Timber.e(e);
+        }
+        return lux;
+    }
 }

@@ -20,17 +20,21 @@ import javax.inject.Inject;
 
 public class SensorRepository {
     private TphSensorDriverController mTphSensorDriverController;
+    private LightSensorDriverController mLightSensorDriverController;
 
     @Inject
-    public SensorRepository(TphSensorDriverController tphSensorDriverController) {
+    public SensorRepository(TphSensorDriverController tphSensorDriverController,
+                            LightSensorDriverController lightSensorDriverController) {
         mTphSensorDriverController = tphSensorDriverController;
+        mLightSensorDriverController = lightSensorDriverController;
     }
 
     public SensorData getSensorData() {
+        // TODO handle null data
         return new SensorData(
                 Math.round(mTphSensorDriverController.getTemperature()),
                 Math.round(mTphSensorDriverController.getPressure()),
                 Math.round(mTphSensorDriverController.getHumidity()),
-                540.499099f);
+                mLightSensorDriverController.getLux());
     }
 }
