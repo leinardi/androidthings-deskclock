@@ -13,38 +13,8 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-apply from: rootProject.file('versions-plugin.gradle')
 
-buildscript {
-    repositories {
-        apply from: 'versions.gradle'
-        addRepos(repositories)
-    }
-    dependencies {
-        classpath deps.android_gradle_plugin
-        classpath deps.android_checkstyle_plugin
-        classpath deps.gradle_versions_plugin
-        // NOTE: Do not place your application dependencies here; they belong
-        // in the individual module build.gradle files
-    }
-}
-
-allprojects {
-    repositories {
-        addRepos(repositories)
-    }
-}
-
-subprojects {
-    project.configurations.all {
-        resolutionStrategy.eachDependency { details ->
-            if (details.requested.group == 'com.android.support'
-                    && !details.requested.name.contains('multidex')) {
-                details.useVersion versions.support
-            }
-        }
-    }
-}
+apply plugin: 'com.github.ben-manes.versions'
 
 dependencyUpdates.resolutionStrategy = {
     componentSelection { rules ->
@@ -57,8 +27,4 @@ dependencyUpdates.resolutionStrategy = {
             }
         }
     }
-}
-
-task clean(type: Delete) {
-    delete rootProject.buildDir
 }
