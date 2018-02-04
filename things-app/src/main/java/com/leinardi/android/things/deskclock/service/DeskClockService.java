@@ -73,21 +73,22 @@ public class DeskClockService extends Service {
 
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
-        if (ACTION_START_DESK_CLOCK_SERVICE.equals(intent.getAction())) {
-            Timber.d("Received Start Foreground Intent ");
-            if (!mIsInForeground) {
-                showNotification();
-                mIsInForeground = true;
-                mDeskClockController.setLocale(mConfigRepository.getLocale());
-                mDeskClockController.setTimeZone(mConfigRepository.getTimeZone());
+        if (intent != null) {
+            if (ACTION_START_DESK_CLOCK_SERVICE.equals(intent.getAction())) {
+                Timber.d("Received Start Foreground Intent ");
+                if (!mIsInForeground) {
+                    showNotification();
+                    mIsInForeground = true;
+                    mDeskClockController.setLocale(mConfigRepository.getLocale());
+                    mDeskClockController.setTimeZone(mConfigRepository.getTimeZone());
 
-                mDeskClockController.start();
+                    mDeskClockController.start();
+                }
+            } else if (ACTION_STOP_DESK_CLOCK_SERVICE.equals(intent.getAction())) {
+                Timber.d("Received Stop Foreground Intent");
+                mDeskClockController.close();
+                stopSelf();
             }
-        } else if (ACTION_STOP_DESK_CLOCK_SERVICE.equals(intent.getAction())) {
-            Timber.d("Received Stop Foreground Intent");
-            mDeskClockController.close();
-            stopForeground(true);
-            stopSelf();
         }
         return START_STICKY;
     }

@@ -24,6 +24,8 @@ import com.google.android.things.device.DeviceManager;
 import com.google.android.things.device.TimeManager;
 import com.leinardi.android.things.deskclock.epd.EpdDriverController;
 import com.leinardi.android.things.deskclock.epd.EpdHelper;
+import com.leinardi.android.things.deskclock.sensor.SensorData;
+import com.leinardi.android.things.deskclock.sensor.SensorRepository;
 import com.leinardi.android.things.deskclock.weather.WeatherRepository;
 import com.leinardi.android.things.deskclock.weather.model.Weather;
 import io.reactivex.disposables.CompositeDisposable;
@@ -40,20 +42,22 @@ public class DeskClockController implements BaseController {
     private static final int WEATHER_REFRESH_INTERVAL_IN_MINUTES = 20;
     private static final int WEATHER_ADVANCE_TIME_IN_SECONDS = 5;
     private static final long WAKE_LOCK_TIMEOUT = TimeUnit.SECONDS.toMillis(10);
-    private EpdDriverController mEpdDriverController;
-    private EpdHelper mEpdHelper;
-    private WeatherRepository mWeatherRepository;
-    private PowerManager mPowerManager;
-    private CompositeDisposable mCompositeDisposable = new CompositeDisposable();
+    private static final float INVERT_DISPLAY_THRESHOLD = 1.5f;
+    private final EpdDriverController mEpdDriverController;
+    private final EpdHelper mEpdHelper;
+    private final SensorRepository mSensorRepository;
+    private final WeatherRepository mWeatherRepository;
+    private final PowerManager mPowerManager;
+    private final CompositeDisposable mCompositeDisposable = new CompositeDisposable();
 
-    private Handler mHandler = new Handler();
+    private final Handler mHandler = new Handler();
 
-    private Runnable mHandlerClockRefreshTask = () -> {
+    private final Runnable mHandlerClockRefreshTask = () -> {
         scheduleNextClockRefresh();
         refreshDisplay();
     };
 
-    private Runnable mHandlerWeatherRefreshTask = () -> {
+    private final Runnable mHandlerWeatherRefreshTask = () -> {
         scheduleNextWeatherRefresh();
         fetchWeather();
     };
@@ -61,10 +65,12 @@ public class DeskClockController implements BaseController {
     @Inject
     public DeskClockController(EpdDriverController epdDriverController,
                                EpdHelper epdHelper,
+                               SensorRepository sensorRepository,
                                WeatherRepository weatherRepository,
                                PowerManager powerManager) {
         mEpdDriverController = epdDriverController;
         mEpdHelper = epdHelper;
+        mSensorRepository = sensorRepository;
         mWeatherRepository = weatherRepository;
         mPowerManager = powerManager;
     }
@@ -126,7 +132,9 @@ public class DeskClockController implements BaseController {
 
     public synchronized void refreshDisplay() {
         Timber.d("refreshDisplay");
-        mEpdDriverController.show(mEpdHelper.getBitmap());
+        SensorData sensorData = mSensorRepository.getSensorData();
+        mEpdDriverController.invertDisplay(sensorData.getLux() < INVERT_DISPLAY_THRESHOLD);
+        mEpdDriverController.show(mEpdHelper.getBitmap(sensorData, mWeatherRepository.getWeathers()));
     }
 
     public void setLocale(Locale... locales) {

@@ -34,9 +34,7 @@ import android.util.MonthDisplayHelper;
 
 import com.leinardi.android.things.deskclock.R;
 import com.leinardi.android.things.deskclock.sensor.SensorData;
-import com.leinardi.android.things.deskclock.sensor.SensorRepository;
 import com.leinardi.android.things.deskclock.util.SystemInfoHelper;
-import com.leinardi.android.things.deskclock.weather.WeatherRepository;
 import com.leinardi.android.things.deskclock.weather.model.Weather;
 
 import javax.inject.Inject;
@@ -60,18 +58,18 @@ public class EpdHelper {
     private static final int TIME_CENTER_X = 220;
     private static final int TIME_CENTER_Y = 4;
 
-    private static final int SENSORS_LEFT_X = 8;
+    private static final int SENSORS_LEFT_X = 16;
     private static final int SENSORS_LEFT_Y = TIME_CENTER_Y + TEXT_SIZE_HUGE + 20;
 
-    private static final int WEATHER_LEFT_X = 8;
+    private static final int WEATHER_LEFT_X = SENSORS_LEFT_X;
     private static final int WEATHER_LEFT_Y = TIME_CENTER_Y + TEXT_SIZE_HUGE + 132;
     private static final int WEATHER_CONDITIONS_MAX_LENGTH = 410;
-    private static final int FORECAST_CELL_WIDTH = 86;
+    private static final int FORECAST_CELL_WIDTH = 92;
     private static final int FORECAST_DAYS = 3;
 
-    private static final int CALENDAR_LEFT_X = WIDTH - 212;
+    private static final int CALENDAR_LEFT_X = WIDTH - 190;
     private static final int CALENDAR_LEFT_Y = 22;
-    private static final int CALENDAR_CELL_WIDTH = 30;
+    private static final int CALENDAR_CELL_WIDTH = 26;
     private static final int CALENDAR_CELL_HEIGHT = 20;
 
     private final SimpleDateFormat mTime24HDateFormat = new SimpleDateFormat("HH:mm", Locale.getDefault());
@@ -82,11 +80,8 @@ public class EpdHelper {
     private final SimpleDateFormat mDayOfWeekLongDateFormat = new SimpleDateFormat("EEEE", Locale.getDefault());
     private final SimpleDateFormat mMonthDateFormat = new SimpleDateFormat("MMMM", Locale.getDefault());
 
-    private static final String TAG = EpdHelper.class.getSimpleName();
     private static final int DAYS_IN_A_WEEK = 7;
     private final SystemInfoHelper mSystemInfoHelper;
-    private final WeatherRepository mWeatherRepository;
-    private final SensorRepository mSensorRepository;
     private TextPaint mTextPaint;
     private Bitmap mTextAsBitmap;
     private Canvas mCanvas;
@@ -95,12 +90,9 @@ public class EpdHelper {
 
     @Inject
     public EpdHelper(Application application,
-                     SystemInfoHelper systemInfoHelper,
-                     WeatherRepository weatherRepository, SensorRepository sensorRepository) {
-        mWeatherRepository = weatherRepository;
+                     SystemInfoHelper systemInfoHelper) {
         mContext = application.getApplicationContext();
         mSystemInfoHelper = systemInfoHelper;
-        mSensorRepository = sensorRepository;
         mTextPaint = new TextPaint();
         mTextPaint.setTextSize(TEXT_SIZE_SMALLEST);
         mTextPaint.setTypeface(ResourcesCompat.getFont(mContext, R.font.epd_font));
@@ -111,16 +103,16 @@ public class EpdHelper {
     private void clearCanvas() {
         mCalendar = Calendar.getInstance();
 
-        //        mCalendar.set(2018, Calendar.SEPTEMBER, 23);
+        mCalendar.set(2018, Calendar.SEPTEMBER, 12);
 
         mTextAsBitmap = Bitmap.createBitmap(WIDTH, HEIGHT, Bitmap.Config.ARGB_8888);
         mCanvas = new Canvas(mTextAsBitmap);
         mCanvas.setDrawFilter(new PaintFlagsDrawFilter(Paint.FILTER_BITMAP_FLAG, 0));
     }
 
-    public Bitmap getBitmap() {
+    public Bitmap getBitmap(SensorData sensorData, Weather[] weathers) {
         clearCanvas();
-        drawScreen(mSensorRepository.getSensorData(), mWeatherRepository.getWeathers());
+        drawScreen(sensorData, weathers);
         return mTextAsBitmap;
     }
 
@@ -191,7 +183,7 @@ public class EpdHelper {
                     int y = calendarHeaderY + CALENDAR_CELL_HEIGHT * (row + 1);
                     int dayAt = monthDisplayHelper.getDayAt(row, col);
                     if (dayAt == mCalendar.get(Calendar.DAY_OF_MONTH)) {
-                        mCanvas.drawRect(x + 6 - CALENDAR_CELL_WIDTH, y - 1, x + 6, y - 1 + CALENDAR_CELL_HEIGHT,
+                        mCanvas.drawRect(x + 4 - CALENDAR_CELL_WIDTH, y - 1, x + 4, y - 1 + CALENDAR_CELL_HEIGHT,
                                 mTextPaint);
                         mTextPaint.setColor(Color.BLACK);
                     }
@@ -220,23 +212,22 @@ public class EpdHelper {
         int sensorIconSide = drawDrawable(R.drawable.sensor_temperature, firstColumnX, SENSORS_LEFT_Y, 2);
         drawDrawable(R.drawable.sensor_humidity, firstColumnX, secondRowY, 2, false);
 
-        drawText(Paint.Align.LEFT, TEXT_SIZE_MEDIUM_LARGE, Integer.toString(sensorData.getTemperature()),
+        drawText(Paint.Align.LEFT, TEXT_SIZE_MEDIUM_LARGE, Integer.toString(sensorData.getTemperature()) + "°",
                 firstColumnX + sensorIconSide + 8, SENSORS_LEFT_Y - getTextCapsHeightFromTop(TEXT_SIZE_MEDIUM_LARGE)
                         / 2);
         int sensorTextWidth = drawText(Paint.Align.LEFT, TEXT_SIZE_MEDIUM_LARGE, Integer.toString(sensorData
-                        .getHumidity()),
-                firstColumnX + sensorIconSide + 8, secondRowY - getTextCapsHeightFromTop(TEXT_SIZE_MEDIUM_LARGE) / 2,
-                false);
+                        .getHumidity()) + "%", firstColumnX + sensorIconSide + 8,
+                secondRowY - getTextCapsHeightFromTop(TEXT_SIZE_MEDIUM_LARGE) / 2, false);
 
         int secondColumnX = firstColumnX + sensorTextWidth + sensorIconSide + 24;
 
         drawDrawable(R.drawable.sensor_pressure, secondColumnX, SENSORS_LEFT_Y, 2);
         drawDrawable(R.drawable.sensor_lux, secondColumnX, secondRowY, 2, false);
 
-        drawText(Paint.Align.LEFT, TEXT_SIZE_MEDIUM_LARGE, Integer.toString(sensorData.getPressure()),
+        drawText(Paint.Align.LEFT, TEXT_SIZE_MEDIUM_LARGE, Integer.toString(sensorData.getPressure()) + " hPa",
                 secondColumnX + sensorIconSide + 16, SENSORS_LEFT_Y
                         - getTextCapsHeightFromTop(TEXT_SIZE_MEDIUM_LARGE) / 2);
-        drawText(Paint.Align.LEFT, TEXT_SIZE_MEDIUM_LARGE, String.format(Locale.getDefault(), "%.1f", sensorData
+        drawText(Paint.Align.LEFT, TEXT_SIZE_MEDIUM_LARGE, String.format(Locale.getDefault(), "%.1f lux", sensorData
                         .getLux()),
                 secondColumnX + sensorIconSide + 16, secondRowY - getTextCapsHeightFromTop(TEXT_SIZE_MEDIUM_LARGE) /
                         2, false);
@@ -246,7 +237,7 @@ public class EpdHelper {
         if (weathers != null && weathers.length > 0) {
             int todayIconSide = drawDrawable(weathers[0].getIcon(), WEATHER_LEFT_X, WEATHER_LEFT_Y, 5);
             int todayTemperatureWidth = drawText(Paint.Align.LEFT, TEXT_SIZE_MEDIUM_LARGE,
-                    Integer.toString(weathers[0].getTemp()),
+                    Integer.toString(weathers[0].getTemp()) + "°",
                     WEATHER_LEFT_X + 8 + todayIconSide, WEATHER_LEFT_Y + 2);
 
             CharSequence ellipsize = TextUtils.ellipsize(weathers[0].getConditions(), mTextPaint,
@@ -256,26 +247,27 @@ public class EpdHelper {
                     todayIconSide, WEATHER_LEFT_Y + todayIconSide - 10, false);
             for (int i = 1; i < weathers.length && i < FORECAST_DAYS + 1; i++) {
                 int forecastIconY = WEATHER_LEFT_Y;
-                int forecastIconSide = drawDrawable(weathers[i].getIcon(), WEATHER_LEFT_X + todayTemperatureWidth + 8
+                int forecastIconSide = drawDrawable(weathers[i].getIcon(), WEATHER_LEFT_X + todayTemperatureWidth + 2
                         + (i *
                         FORECAST_CELL_WIDTH), forecastIconY, 3);
                 drawText(Paint.Align.LEFT, TEXT_SIZE_SMALL, mDayOfWeekShortDateFormat.format(weathers[i].getDate())
-                                .toUpperCase(), WEATHER_LEFT_X + todayTemperatureWidth + 8 + (i *
+                                .toUpperCase(), WEATHER_LEFT_X + todayTemperatureWidth + 2 + (i *
                                 FORECAST_CELL_WIDTH) + 8 + forecastIconSide,
                         forecastIconY);
-                drawText(Paint.Align.LEFT, TEXT_SIZE_SMALL, Integer.toString(weathers[i].getTempHigh()),
-                        WEATHER_LEFT_X + todayTemperatureWidth + 8 + (i * FORECAST_CELL_WIDTH) + 8 +
+                drawText(Paint.Align.LEFT, TEXT_SIZE_SMALL, Integer.toString(weathers[i].getTempHigh()) + "°",
+                        WEATHER_LEFT_X + todayTemperatureWidth + 2 + (i * FORECAST_CELL_WIDTH) + 8 +
                                 forecastIconSide, forecastIconY +
                                 forecastIconSide / 2 - getTextSizeBaseline(TEXT_SIZE_SMALL) / 2);
-                drawText(Paint.Align.LEFT, TEXT_SIZE_SMALL, Integer.toString(weathers[i].getTempLow()),
-                        WEATHER_LEFT_X + todayTemperatureWidth + 8 + (i * FORECAST_CELL_WIDTH) + 8 +
+                drawText(Paint.Align.LEFT, TEXT_SIZE_SMALL, Integer.toString(weathers[i].getTempLow()) + "°",
+                        WEATHER_LEFT_X + todayTemperatureWidth + 2 + (i * FORECAST_CELL_WIDTH) + 8 +
                                 forecastIconSide, forecastIconY +
                                 forecastIconSide, false);
             }
-            drawText(Paint.Align.RIGHT, TEXT_SIZE_SMALLEST, "Powered by Weather Underground",
-                    WEATHER_LEFT_X + todayTemperatureWidth + 8 + (
-                            (weathers.length - 1) * FORECAST_CELL_WIDTH) + 78, WEATHER_LEFT_Y + todayIconSide -
-                            4);
+            //            drawText(Paint.Align.RIGHT, TEXT_SIZE_SMALLEST, "Powered by Weather Underground",
+            //                    WEATHER_LEFT_X + todayTemperatureWidth + 8 + (
+            //                            (weathers.length - 1) * FORECAST_CELL_WIDTH) + 78, WEATHER_LEFT_Y +
+            // todayIconSide -
+            //                            4);
         } else {
             drawText(Paint.Align.LEFT, TEXT_SIZE_MEDIUM, "Error fetching weather information", WEATHER_LEFT_X,
                     WEATHER_LEFT_Y + 9);
