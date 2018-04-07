@@ -138,11 +138,11 @@ public class DeskClockController implements BaseController {
     }
 
     public void setLocale(Locale... locales) {
-        new DeviceManager().setSystemLocales(new LocaleList(locales));
+        DeviceManager.getInstance().setSystemLocales(new LocaleList(locales));
     }
 
     public void setTimeZone(String timeZone) {
-        TimeManager timeManager = new TimeManager();
+        TimeManager timeManager = TimeManager.getInstance();
         timeManager.setTimeZone(timeZone);
         timeManager.setAutoTimeEnabled(true);
     }

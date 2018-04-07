@@ -74,8 +74,9 @@ dependencies {
     implementation deps.lifecycle.runtime
     implementation deps.lifecycle.extensions
     implementation deps.timber
-    implementation deps.driver_epaperdriverhat
     implementation deps.driver_bmx280
+    implementation deps.driver_ds3231_receiver
+    implementation deps.driver_epaperdriverhat
     implementation deps.driver_tsl256x
 
     implementation deps.dagger.runtime

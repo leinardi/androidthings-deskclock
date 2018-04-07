@@ -103,7 +103,7 @@ public class EpdHelper {
     private void clearCanvas() {
         mCalendar = Calendar.getInstance();
 
-        mCalendar.set(2018, Calendar.SEPTEMBER, 12);
+//        mCalendar.set(2018, Calendar.SEPTEMBER, 12);
 
         mTextAsBitmap = Bitmap.createBitmap(WIDTH, HEIGHT, Bitmap.Config.ARGB_8888);
         mCanvas = new Canvas(mTextAsBitmap);
